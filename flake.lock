@@ -1,0 +1,80 @@
+{
+  "nodes": {
+    "assella-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1785773608,
+        "narHash": "sha256-0+QX+YXUXbYIBB1gcjkwihkil5KFpMCZ99GY05ybnVc=",
+        "owner": "niwia",
+        "repo": "ASSella",
+        "rev": "81b8d0b30e71528cabbe715bdebf19ada1edcee0",
+        "type": "github"
+      },
+      "original": {
+        "owner": "niwia",
+        "repo": "ASSella",
+        "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1786106723,
+        "narHash": "sha256-zDSUbpoeo/9ZmD2+wXnzxoo1+uhL8vxc0b8yuYMKYq0=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "f13ff45afd1bb73e640eaa08a7066dbed07e3238",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "assella-src": "assella-src",
+        "nixpkgs": "nixpkgs",
+        "steam-src": "steam-src",
+        "vdf-src": "vdf-src"
+      }
+    },
+    "steam-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1775241569,
+        "narHash": "sha256-tJ/iLuDe3y3v1wcCsHzQoVhcpT7GC+zUh2ZXbhevI7k=",
+        "owner": "solsticegamestudios",
+        "repo": "steam",
+        "rev": "1373e885f26bb636225443787f54d4082283e5f3",
+        "type": "github"
+      },
+      "original": {
+        "owner": "solsticegamestudios",
+        "repo": "steam",
+        "rev": "1373e885f26bb636225443787f54d4082283e5f3",
+        "type": "github"
+      }
+    },
+    "vdf-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1726204017,
+        "narHash": "sha256-MGhzIAy5uLulb57oz6OZ7pHFweHIDxi0WyjnPfGsA/k=",
+        "owner": "solsticegamestudios",
+        "repo": "vdf",
+        "rev": "fb88ea7e38a85476743f5601b0c80d5715034623",
+        "type": "github"
+      },
+      "original": {
+        "owner": "solsticegamestudios",
+        "repo": "vdf",
+        "rev": "fb88ea7e38a85476743f5601b0c80d5715034623",
+        "type": "github"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}
