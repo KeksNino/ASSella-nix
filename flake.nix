@@ -5,11 +5,11 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
     assella-src = {
-      url = "github:niwia/ASSella";
+      url = "github:niwia/ASSella?ref=v2.5.8";
       flake = false;
     };
 
-    # Git dependencies from requirements.txt
+    # Git dependencies
     steam-src = {
       url = "github:solsticegamestudios/steam/1373e885f26bb636225443787f54d4082283e5f3";
       flake = false;
@@ -123,8 +123,11 @@
               ps.requests
               ps.six
               vdf
+              ps.pyrate-limiter
+              ps.urllib3
             ];
           };
+
 
           pythonEnv = python.withPackages (p: [
             p.pyqt6
@@ -139,6 +142,11 @@
             p.beautifulsoup4
             steam-py
             vdf
+            p.pillow
+            p.urwid
+            p.cryptography
+            p.numpy
+            p.urllib3
           ]);
 
           runtimeLibs = with pkgs; [

@@ -3,15 +3,16 @@
     "assella-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1785773608,
-        "narHash": "sha256-0+QX+YXUXbYIBB1gcjkwihkil5KFpMCZ99GY05ybnVc=",
+        "lastModified": 1786287819,
+        "narHash": "sha256-2J9MjmbNg+uhuxKIAT9IpOp4A6AxA1tDt2UZKlAJaH0=",
         "owner": "niwia",
         "repo": "ASSella",
-        "rev": "81b8d0b30e71528cabbe715bdebf19ada1edcee0",
+        "rev": "b0b323d89d0a727ac4448ff95f5021a7811908cc",
         "type": "github"
       },
       "original": {
         "owner": "niwia",
+        "ref": "v2.5.8",
         "repo": "ASSella",
         "type": "github"
       }
