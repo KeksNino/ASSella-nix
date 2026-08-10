@@ -164,6 +164,7 @@
             nativeBuildInputs = [
               pkgs.makeWrapper
               pkgs.qt6.wrapQtAppsHook
+              pkgs.copyDesktopItems
             ];
 
             buildInputs = [
@@ -171,6 +172,19 @@
               pkgs.qt6.qtwayland
               pkgs.qt6.qtsvg
               pkgs.zstd
+            ];
+
+            desktopItems = [
+              (pkgs.makeDesktopItem {
+                name = "assella";
+                desktopName = "ASSella";
+                comment = "ASSella Application";
+                exec = "assella %u";
+                icon = "assella";
+                terminal = false;
+                categories = [ "Utility" "Application" ];
+                mimeTypes = [ "x-scheme-handler/accela" ];
+              })
             ];
 
             dontBuild = true;
@@ -191,26 +205,11 @@
                 --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath runtimeLibs}" \
                 "''${qtWrapperArgs[@]}"
 
-              mkdir -p $out/share/applications
+              if [ -f src/res/logo/icon.png ]; then
+                install -Dm644 src/res/logo/icon.png $out/share/icons/hicolor/256x256/apps/assella.png
+              fi
 
-              cat > $out/share/applications/assella.desktop <<EOF
-                [Desktop Entry]
-                Type=Application
-                Name=ASSella
-                Comment=ASSella Application
-                Exec=$out/bin/assella %u
-                Icon=assella
-                Terminal=false
-                Categories=Utility;Application;
-                MimeType=x-scheme-handler/accela;
-                EOF
-
-                if [ -f src/res/logo/icon.png ]; then
-                    install -Dm644 src/res/logo/icon.png \
-                    $out/share/icons/hicolor/256x256/apps/assella.png
-                fi
-
-                runHook postInstall
+              runHook postInstall
             '';
 
             meta = {
