@@ -9,7 +9,6 @@
       flake = false;
     };
 
-    # Git dependencies
     steam-src = {
       url = "github:solsticegamestudios/steam/1373e885f26bb636225443787f54d4082283e5f3";
       flake = false;
@@ -22,156 +21,140 @@
   };
 
   outputs =
-    { self
-    , nixpkgs
-    , assella-src
-    , steam-src
-    , vdf-src
+    {
+      self,
+      nixpkgs,
+      assella-src,
+      steam-src,
+      vdf-src,
     }:
-
     let
       systems = [
         "x86_64-linux"
         "aarch64-linux"
       ];
-
       forAllSystems = nixpkgs.lib.genAttrs systems;
     in
     {
-      packages = forAllSystems (system:
+      packages = forAllSystems (
+        system:
         let
           pkgs = import nixpkgs {
             inherit system;
+            config.allowUnfree = true;
           };
-
           lib = pkgs.lib;
-          python = pkgs.python3;
-          ps = python.pkgs;
 
-          vdf = ps.buildPythonPackage {
-            pname = "vdf";
-            version = "3.4";
+          python3 = pkgs.python3.override {
+            packageOverrides = selfPy: superPy: {
+              vdf = selfPy.buildPythonPackage {
+                pname = "vdf";
+                version = "3.4";
+                src = vdf-src;
+                format = "setuptools";
+                doCheck = false;
+              };
 
-            src = vdf-src;
+              gevent-eventemitter = selfPy.buildPythonPackage rec {
+                pname = "gevent-eventemitter";
+                version = "2.1";
+                src = selfPy.fetchPypi {
+                  inherit pname version;
+                  hash = "sha256-AObmiMaiVfe9zvHYyZng0C2auH08b/Ym5twaCXYhB/Q=";
+                };
+                format = "setuptools";
+                doCheck = false;
+                propagatedBuildInputs = [ selfPy.gevent ];
+              };
 
-            format = "setuptools";
-            doCheck = false;
-          };
+              just-playback = selfPy.buildPythonPackage rec {
+                pname = "just_playback";
+                version = "0.1.8";
+                src = selfPy.fetchPypi {
+                  inherit pname version;
+                  hash = "sha256-5ZdHSfEPque7drPx43eaE2knWrF52HWdrifp8ptBA1A=";
+                };
+                format = "setuptools";
+                doCheck = false;
+                propagatedBuildInputs = [
+                  selfPy.miniaudio
+                  selfPy.tinytag
+                ];
+              };
 
-          gevent-eventemitter = ps.buildPythonPackage rec {
-            pname = "gevent-eventemitter";
-            version = "2.1";
-
-            src = ps.fetchPypi {
-              inherit pname version;
-
-              hash = "sha256-AObmiMaiVfe9zvHYyZng0C2auH08b/Ym5twaCXYhB/Q=";
+              steam-py = selfPy.buildPythonPackage {
+                pname = "steam";
+                version = "1.4.4";
+                src = steam-src;
+                format = "setuptools";
+                doCheck = false;
+                nativeBuildInputs = [ selfPy.pythonRelaxDepsHook ];
+                pythonRelaxDeps = [
+                  "protobuf"
+                  "gevent"
+                  "vdf"
+                ];
+                propagatedBuildInputs = with selfPy; [
+                  cachetools
+                  gevent
+                  gevent-eventemitter
+                  protobuf
+                  pycryptodomex
+                  requests
+                  six
+                  vdf
+                  pyrate-limiter
+                  urllib3
+                ];
+              };
             };
-
-            format = "setuptools";
-            doCheck = false;
-
-            propagatedBuildInputs = [
-              ps.gevent
-            ];
           };
-
-          just-playback = ps.buildPythonPackage rec {
-            pname = "just_playback";
-            version = "0.1.8";
-
-            src = ps.fetchPypi {
-              inherit pname version;
-
-              hash = "sha256-5ZdHSfEPque7drPx43eaE2knWrF52HWdrifp8ptBA1A=";
-            };
-
-            format = "setuptools";
-            doCheck = false;
-
-            propagatedBuildInputs = [
-              ps.miniaudio
-              ps.tinytag
-            ];
-          };
-
-          steam-py = ps.buildPythonPackage {
-            pname = "steam";
-            version = "1.4.4";
-
-            src = steam-src;
-
-            format = "setuptools";
-            doCheck = false;
-
-            nativeBuildInputs = [
-              ps.pythonRelaxDepsHook
-            ];
-
-            pythonRelaxDeps = [
-              "protobuf"
-              "gevent"
-              "vdf"
-            ];
-
-            propagatedBuildInputs = [
-              ps.cachetools
-              ps.gevent
-              gevent-eventemitter
-              ps.protobuf
-              ps.pycryptodomex
-              ps.requests
-              ps.six
-              vdf
-              ps.pyrate-limiter
-              ps.urllib3
-            ];
-          };
-
-
-          pythonEnv = python.withPackages (p: [
-            p.pyqt6
-            p."pyqt6-sip"
-            p.psutil
-            p.requests
-            p.zstandard
-            p.gevent
-            gevent-eventemitter
-            just-playback
-            p.tinytag
-            p.beautifulsoup4
-            steam-py
-            vdf
-            p.pillow
-            p.urwid
-            p.cryptography
-            p.numpy
-            p.urllib3
-          ]);
 
           runtimeLibs = with pkgs; [
             zstd
             alsa-lib
             libpulseaudio
+            icu
+            openssl
+            krb5
           ];
 
-          assella = pkgs.stdenvNoCC.mkDerivation {
+          assella = python3.pkgs.buildPythonApplication {
             pname = "assella";
             version = "0-unstable-${assella-src.shortRev or "unknown"}";
 
             src = assella-src;
+            format = "other";
 
             nativeBuildInputs = [
-              pkgs.makeWrapper
               pkgs.qt6.wrapQtAppsHook
               pkgs.copyDesktopItems
             ];
 
-            buildInputs = [
-              pkgs.qt6.qtbase
-              pkgs.qt6.qtwayland
-              pkgs.qt6.qtsvg
-              pkgs.zstd
+            buildInputs = with pkgs.qt6; [
+              qtbase
+              qtwayland
+              qtsvg
+            ];
+
+            propagatedBuildInputs = with python3.pkgs; [
+              pyqt6
+              pyqt6-sip
+              psutil
+              requests
+              zstandard
+              gevent
+              gevent-eventemitter
+              just-playback
+              tinytag
+              beautifulsoup4
+              steam-py
+              vdf
+              pillow
+              urwid
+              cryptography
+              numpy
+              urllib3
             ];
 
             desktopItems = [
@@ -182,28 +165,34 @@
                 exec = "assella %u";
                 icon = "assella";
                 terminal = false;
-                categories = [ "Utility" "Application" ];
+                categories = [
+                  "Utility"
+                  "Application"
+                ];
                 mimeTypes = [ "x-scheme-handler/accela" ];
               })
             ];
 
-            dontBuild = true;
-            dontWrapQtApps = true;
-
             installPhase = ''
               runHook preInstall
 
-              mkdir -p $out/lib/assella
+              mkdir -p $out/lib/assella $out/bin
               cp -R src/. $out/lib/assella/
 
-              mkdir -p $out/bin
+              # starter script
+              cat <<EOF > $out/bin/assella
+              #!/usr/bin/env python3
+              import sys
+              import os
 
-              makeWrapper ${pythonEnv}/bin/python $out/bin/assella \
-                --add-flags "$out/lib/assella/main.py" \
-                --chdir "$out/lib/assella" \
-                --set PYTHONNOUSERSITE 1 \
-                --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath runtimeLibs}" \
-                "''${qtWrapperArgs[@]}"
+              sys.path.insert(0, "$out/lib/assella")
+              os.chdir("$out/lib/assella")
+
+              import main
+              if __name__ == "__main__":
+                  main.main() if hasattr(main, "main") else None
+              EOF
+              chmod +x $out/bin/assella
 
               if [ -f src/res/logo/icon.png ]; then
                 install -Dm644 src/res/logo/icon.png $out/share/icons/hicolor/256x256/apps/assella.png
@@ -212,10 +201,20 @@
               runHook postInstall
             '';
 
-            meta = {
+            preFixup = ''
+              makeWrapperArgs+=(
+                --set PYTHONNOUSERSITE 1
+                --set DOTNET_ROOT "${pkgs.dotnet-runtime_9}/share/dotnet"
+                --prefix PATH : "${pkgs.dotnet-runtime_9}/bin"
+                --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath runtimeLibs}"
+              )
+            '';
+
+            meta = with lib; {
               description = "ASSella packaged for Nix";
               homepage = "https://github.com/niwia/ASSella";
-              platforms = lib.platforms.linux;
+              license = licenses.unfreeRedistributable; # doesn't seem to have license for now
+              platforms = platforms.linux;
               mainProgram = "assella";
             };
           };
@@ -223,18 +222,20 @@
         {
           default = assella;
           assella = assella;
-        });
+        }
+      );
 
       apps = forAllSystems (system: {
         default = {
           type = "app";
           program = "${self.packages.${system}.assella}/bin/assella";
         };
-
         assella = {
           type = "app";
           program = "${self.packages.${system}.assella}/bin/assella";
         };
       });
+
+      formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.nixpkgs-fmt);
     };
 }
