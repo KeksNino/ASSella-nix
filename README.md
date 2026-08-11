@@ -4,6 +4,14 @@ A Nix flake that packages [ASSella](https://github.com/niwia/ASSella), an ACCELA
 
 ## Quick Start
 
+## Requirements
+
+Make sure flakes are enabled in your Nix configuration:
+
+```conf
+experimental-features = nix-command flakes
+```
+
 ### Using with Flakes
 
 Add this flake as an input to your `flake.nix`:
@@ -28,6 +36,16 @@ environment.systemPackages = [
 ];
 ```
 
+### Home Manager
+
+For Home Manager users:
+
+```nix
+home.packages = [
+  inputs.assella.packages.${pkgs.system}.default
+];
+```
+
 ### Direct Installation
 
 You can also install ASSella directly without adding it to your flake inputs:
@@ -45,24 +63,6 @@ nix run github:UltimatePlayer97/ASSella-nix#assella
 ```bash
 nix shell github:UltimatePlayer97/ASSella-nix#assella
 assella
-```
-
-### Home Manager
-
-For Home Manager users:
-
-```nix
-home.packages = [
-  inputs.assella.packages.${pkgs.system}.default
-];
-```
-
-## Requirements
-
-Make sure flakes are enabled in your Nix configuration:
-
-```conf
-experimental-features = nix-command flakes
 ```
 
 ## Features
