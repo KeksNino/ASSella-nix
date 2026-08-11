@@ -45,6 +45,8 @@
           };
           lib = pkgs.lib;
 
+          dotnetRuntime = pkgs.dotnet-runtime_9; # .NET 9 Runtime
+
           python3 = pkgs.python3.override {
             packageOverrides = selfPy: superPy: {
               vdf = selfPy.buildPythonPackage {
@@ -127,15 +129,18 @@
             format = "other";
 
             nativeBuildInputs = [
+              pkgs.makeWrapper
               pkgs.qt6.wrapQtAppsHook
               pkgs.copyDesktopItems
             ];
 
-            buildInputs = with pkgs.qt6; [
+            buildInputs = [
+              dotnetRuntime
+            ] ++ (with pkgs.qt6; [
               qtbase
               qtwayland
               qtsvg
-            ];
+            ]);
 
             propagatedBuildInputs = with python3.pkgs; [
               pyqt6
@@ -179,7 +184,11 @@
               mkdir -p $out/lib/assella $out/bin
               cp -R src/. $out/lib/assella/
 
-              # starter script
+              if [ -d $out/lib/assella/deps ]; then
+                ln -s $out/lib/assella/deps $out/bin/deps
+              fi
+
+              # Starter script
               cat <<EOF > $out/bin/assella
               #!/usr/bin/env python3
               import sys
@@ -204,8 +213,8 @@
             preFixup = ''
               makeWrapperArgs+=(
                 --set PYTHONNOUSERSITE 1
-                --set DOTNET_ROOT "${pkgs.dotnet-runtime_9}/share/dotnet"
-                --prefix PATH : "${pkgs.dotnet-runtime_9}/bin"
+                --set DOTNET_ROOT "${dotnetRuntime}/share/dotnet"
+                --prefix PATH : "${dotnetRuntime}/bin"
                 --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath runtimeLibs}"
               )
             '';
@@ -213,7 +222,7 @@
             meta = with lib; {
               description = "ASSella packaged for Nix";
               homepage = "https://github.com/niwia/ASSella";
-              license = licenses.unfreeRedistributable; # doesn't seem to have license for now
+              license = licenses.unfreeRedistributable;
               platforms = platforms.linux;
               mainProgram = "assella";
             };
